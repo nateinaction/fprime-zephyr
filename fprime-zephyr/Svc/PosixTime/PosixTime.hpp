@@ -1,7 +1,7 @@
 // ======================================================================
-// \title  ZephyrTime.cpp
+// \title  PosixTime.cpp
 // \author nateinaction & ineskhou
-// \brief  cpp file for ZephyrTime component implementation class
+// \brief  cpp file for PosixTime component implementation class
 //
 // \copyright
 // Copyright 2009-2015, by the California Institute of Technology.
@@ -13,16 +13,14 @@
 #ifndef ZEPHYR_TIME_HPP_
 #define ZEPHYR_TIME_HPP_
 
-#include <Svc/ZephyrTime/ZephyrTimeComponentAc.hpp>
-
-// #include <zephyr/kernel.h>
+#include "fprime-zephyr/Svc/PosixTime/PosixTimeComponentAc.hpp"
 
 namespace Zephyr {
 
-class ZephyrTime final : public ZephyrTimeComponentBase {
+class PosixTime final : public PosixTimeComponentBase {
   public:
-    explicit ZephyrTime(const char* compName);
-    virtual ~ZephyrTime();
+    PosixTime(const char* compName);
+    ~PosixTime();
 
   protected:
     void timeGetPort_handler(FwIndexType portNum, /*!< The port number*/

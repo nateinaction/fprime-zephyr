@@ -1,0 +1,10 @@
+register_fprime_module(
+    AUTOCODER_INPUTS
+        "${CMAKE_CURRENT_LIST_DIR}/PosixTime.fpp"
+    SOURCES
+        "${CMAKE_CURRENT_LIST_DIR}/PosixTime.cpp"
+    DEPENDS
+        Os
+        Fw_Logger
+        Fw_Time
+)

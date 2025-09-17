@@ -1,9 +1,0 @@
-register_fprime_module(
-    AUTOCODER_INPUTS
-        "${CMAKE_CURRENT_LIST_DIR}/ZephyrTime.fpp"
-    SOURCES
-        "${CMAKE_CURRENT_LIST_DIR}/ZephyrTime.cpp"
-    DEPENDS
-        Os
-        Fw_Logger
-)
