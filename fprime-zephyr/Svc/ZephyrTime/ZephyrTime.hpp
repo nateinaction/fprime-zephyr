@@ -17,7 +17,7 @@
 
 // #include <zephyr/kernel.h>
 
-namespace Svc {
+namespace Zephyr {
 
 class ZephyrTime final : public ZephyrTimeComponentBase {
   public:
@@ -32,6 +32,6 @@ class ZephyrTime final : public ZephyrTimeComponentBase {
   private:
 };
 
-}  // namespace Svc
+}  // namespace Zephyr
 
 #endif /* ZEPHYR_TIME_HPP_ */
