@@ -107,4 +107,6 @@ register_fprime_implementation(
     "${CMAKE_CURRENT_LIST_DIR}/FileSystem.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/Directory.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/DefaultFile.cpp"
+  HEADERS
+    "${CMAKE_CURRENT_LIST_DIR}/Directory.hpp"
 )

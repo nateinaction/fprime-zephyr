@@ -1,6 +1,6 @@
 // ======================================================================
-// \title Os/Posix/Directory.cpp
-// \brief Posix implementation for Os::Directory
+// \title fprime-zephyr/Os/Directory.cpp
+// \brief Zephyr implementation for Os::Directory
 // ======================================================================
 #include <sys/stat.h>
 #include <cerrno>
@@ -8,28 +8,33 @@
 
 #include <Fw/Types/Assert.hpp>
 #include <Fw/Types/StringUtils.hpp>
-#include <Os/Posix/Directory.hpp>
+#include <fprime-zephyr/Os/Directory.hpp>
 #include <Os/Posix/error.hpp>
 #include <sys/types.h>
 #include <dirent.h>
+#include <zephyr/sys/printk.h>
 
 namespace Os {
-namespace Posix {
+namespace Zephyr {
 namespace Directory {
 
-PosixDirectory::PosixDirectory() : Os::DirectoryInterface(), m_handle() {}
-
-DirectoryHandle* PosixDirectory::getHandle() {
+DirectoryHandle* ZephyrDirectory::getHandle() {
     return &this->m_handle;
 }
 
-PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
+ZephyrDirectory::Status ZephyrDirectory::open(const char* path, OpenMode mode) {
     Status status = Status::OP_OK;
+
+    // The path must be stored for rewind(), so reject paths that would truncate
+    if (Fw::StringUtils::string_length(path, ZephyrDirectoryHandle::PATH_MAX_LENGTH) ==
+        ZephyrDirectoryHandle::PATH_MAX_LENGTH) {
+        return Status::OTHER_ERROR;
+    }
 
     // If one of the CREATE mode, attempt to create the directory
     if (mode == OpenMode::CREATE_EXCLUSIVE || mode == OpenMode::CREATE_IF_MISSING) {
         if (::mkdir(path, S_IRWXU) == -1) {
-            status = errno_to_directory_status(errno);
+            status = Os::Posix::errno_to_directory_status(errno);
             // If error is not ALREADY_EXISTS, return the error
             // If any error and mode CREATE_EXCLUSIVE, return the error
             // Else, we keep going with OP_OK
@@ -44,18 +49,34 @@ PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
     DIR* dir = ::opendir(path);
 
     if (dir == nullptr) {
-        status = errno_to_directory_status(errno);
+        // errno is otherwise collapsed to a coarse Status (e.g. EMFILE -> OTHER_ERROR)
+        printk("opendir(%s) failed: errno %d\n", path, errno);
+        status = Os::Posix::errno_to_directory_status(errno);
+    } else {
+        (void)Fw::StringUtils::string_copy(this->m_handle.m_path, path, ZephyrDirectoryHandle::PATH_MAX_LENGTH);
     }
 
     this->m_handle.m_dir_descriptor = dir;
     return status;
 }
 
-PosixDirectory::Status PosixDirectory::rewind() {
-    return PosixDirectory::Status::NOT_SUPPORTED;
+ZephyrDirectory::Status ZephyrDirectory::rewind() {
+    // Zephyr declares but does not implement rewinddir(), so emulate a rewind
+    // by reopening the directory. Open the new stream before closing the old
+    // one so the handle stays valid if the reopen fails.
+    DIR* dir = ::opendir(this->m_handle.m_path);
+    if (dir == nullptr) {
+        printk("opendir(%s) failed: errno %d\n", this->m_handle.m_path, errno);
+        return Os::Posix::errno_to_directory_status(errno);
+    }
+    if (this->m_handle.m_dir_descriptor != nullptr) {
+        (void)::closedir(this->m_handle.m_dir_descriptor);
+    }
+    this->m_handle.m_dir_descriptor = dir;
+    return Status::OP_OK;
 }
 
-PosixDirectory::Status PosixDirectory::read(char* fileNameBuffer, FwSizeType bufSize) {
+ZephyrDirectory::Status ZephyrDirectory::read(char* fileNameBuffer, FwSizeType bufSize) {
     FW_ASSERT(fileNameBuffer);
 
     Status status = Status::OP_OK;
@@ -87,7 +108,7 @@ PosixDirectory::Status PosixDirectory::read(char* fileNameBuffer, FwSizeType buf
     return status;
 }
 
-void PosixDirectory::close() {
+void ZephyrDirectory::close() {
     // ::closedir errors if dir descriptor is nullptr
     if (this->m_handle.m_dir_descriptor != nullptr) {
         (void)::closedir(this->m_handle.m_dir_descriptor);
@@ -96,5 +117,5 @@ void PosixDirectory::close() {
 }
 
 }  // namespace Directory
-}  // namespace Posix
+}  // namespace Zephyr
 }  // namespace Os

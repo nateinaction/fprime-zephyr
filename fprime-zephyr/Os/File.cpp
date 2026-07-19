@@ -4,6 +4,7 @@
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Os/File.hpp>
+#include <Os/Posix/error.hpp>
 #include <fprime-zephyr/Os/File.hpp>
 #include <type_traits>
 
@@ -76,8 +77,8 @@ ZephyrFile::Status ZephyrFile::open(const char* filepath,
     }
     int return_code = fs_open(&this->m_handle.m_file, filepath, mode_flags);
     if (return_code != 0) {
-        //TODO: better status
-        status = Os::File::Status::OTHER_ERROR;
+        // fs_open returns a negative errno on failure
+        status = Os::Posix::errno_to_file_status(-return_code);
     }
     return status;
 }

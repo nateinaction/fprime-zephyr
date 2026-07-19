@@ -6,7 +6,7 @@
 #include "Os/Directory.hpp"
 #include "Os/File.hpp"
 #include "Os/FileSystem.hpp"
-#include "Os/Posix/Directory.hpp"
+#include "fprime-zephyr/Os/Directory.hpp"
 #include "fprime-zephyr/Os/File.hpp"
 #include "Os/Posix/FileSystem.hpp"
 
@@ -18,6 +18,6 @@ FileSystemInterface* FileSystemInterface::getDelegate(FileSystemHandleStorage& a
     return Os::Delegate::makeDelegate<FileSystemInterface, Os::Posix::FileSystem::PosixFileSystem>(aligned_new_memory);
 }
 DirectoryInterface* DirectoryInterface::getDelegate(DirectoryHandleStorage& aligned_new_memory) {
-    return Os::Delegate::makeDelegate<DirectoryInterface, Os::Posix::Directory::PosixDirectory>(aligned_new_memory);
+    return Os::Delegate::makeDelegate<DirectoryInterface, Os::Zephyr::Directory::ZephyrDirectory>(aligned_new_memory);
 }
 }  // namespace Os
